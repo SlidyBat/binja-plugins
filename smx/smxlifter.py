@@ -46,7 +46,7 @@ class SmxLifter(SmxOpcodeVisitor):
         return self.il.reg(4, 'sp')
     
     def label(self, addr):
-        l = self.il.get_label_for_address(Architecture['msp430'], addr)
+        l = self.il.get_label_for_address(self.data.arch, addr)
         if l == None:
             return LowLevelILLabel()
         return l
@@ -352,7 +352,7 @@ class SmxLifter(SmxOpcodeVisitor):
     def visit_FILL(self):
         self.i(self.set_reg(LLIL_TEMP(0), self.const(self.read_param(0))))
         loop = LowLevelILLabel()
-        exit = self.il.get_label_for_address(Architecture['SourcePawn'], self.addr + 8)
+        exit = self.il.get_label_for_address(self.data.arch, self.addr + 8)
         if exit == None:
             exit = LowLevelILLabel()
         self.il.mark_label(loop)
@@ -373,10 +373,10 @@ class SmxLifter(SmxOpcodeVisitor):
     
     def visit_LREF_S_PRI(self):
         address = self.frame_value(self.read_param(0))
-        self.i(self.set_reg('pri', self.load(self.ptr(address))))
+        self.i(self.set_reg('pri', self.load(address)))
     def visit_LREF_S_ALT(self):
         address = self.frame_value(self.read_param(0))
-        self.i(self.set_reg('alt', self.load(self.ptr(address))))
+        self.i(self.set_reg('alt', self.load(address)))
     def visit_SREF_S_PRI(self):
         address = self.frame_value(self.read_param(0))
         self.i(self.store(self.ptr(address), self.pri))

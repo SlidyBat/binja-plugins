@@ -38,6 +38,9 @@ class SourcePawn(Architecture):
         return sp_disasm(data, addr, CODE_SEGMENT, DATA_SEGMENT)
     
     def get_instruction_low_level_il(self, data, addr, il):
+        if il.source_function == None:
+            return None
+        
         op, cells = sp_decode(data, addr)
         lifter = SmxLifter(data, addr, il)
         lifter.visit(op)
