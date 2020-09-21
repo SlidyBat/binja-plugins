@@ -213,6 +213,8 @@ class SmxOp(IntEnum):
     FLOAT_EQ = 186
     FLOAT_NOT = 187
 
+SMX_NUM_OPS = 188
+
 # Pseudo-opcode
 SmxOp.CASE = 255
 

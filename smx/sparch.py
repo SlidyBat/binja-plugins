@@ -42,6 +42,8 @@ class SourcePawn(Architecture):
             return None
         
         op, cells = sp_decode(data, addr)
+        if op == None:
+            return None
         lifter = SmxLifter(data, addr, il)
         lifter.visit(op)
         return cells * 4

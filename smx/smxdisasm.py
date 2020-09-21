@@ -6,7 +6,10 @@ def read_cell(data, index):
     return unpack('<i', data[index*4:(index+1)*4])[0]
 
 def sp_decode(instr_data, addr):
-    op = SmxOp(read_cell(instr_data, 0))
+    cell = read_cell(instr_data, 0)
+    if not (cell >= 0 and cell < SMX_NUM_OPS):
+        return None, None
+    op = SmxOp(cell)
     cells = sp_opcode_cells(op)
     return op, cells
 
