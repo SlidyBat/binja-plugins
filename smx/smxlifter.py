@@ -197,6 +197,14 @@ class SmxLifter(SmxOpcodeVisitor):
         self.i(self.set_reg('alt', self.load(self.frame_value(self.read_param(1)))))
     def visit_LOAD_I(self):
         self.i(self.set_reg('pri', self.load(self.pri)))
+    def visit_LODB_I(self):
+        width = self.read_param(0)
+        if width == 1:
+            self.i(self.il.set_reg(1, 'pri', self.load(self.pri)))
+        elif width == 2:
+            self.i(self.il.set_reg(2, 'pri', self.load(self.pri)))
+        else:
+            self.i(self.set_reg('pri', self.load(self.pri)))
     
     def visit_STOR_PRI(self):
         self.i(self.store(self.ptr(self.read_addr(0)), self.pri))
@@ -208,6 +216,14 @@ class SmxLifter(SmxOpcodeVisitor):
         self.i(self.store(self.frame_value(self.read_param(0)), self.alt))
     def visit_STOR_I(self):
         self.i(self.store(self.alt, self.pri))
+    def visit_STRB_I(self):
+        width = self.read_param(0)
+        if width == 1:
+            self.i(self.il.store(1, self.alt, self.pri))
+        elif width == 2:
+            self.i(self.il.store(2, self.alt, self.pri))
+        else:
+            self.i(self.store(self.alt, self.pri))
     
     # TODO: how to handle this
     def visit_SYSREQ_C(self):
@@ -302,8 +318,29 @@ class SmxLifter(SmxOpcodeVisitor):
         self.i(self.set_reg('pri', self.il.xor_expr(4, self.pri, self.alt)))
     def visit_NEG(self):
         self.i(self.set_reg('pri', self.il.neg_expr(4, self.pri)))
+    def visit_NOT(self):
+        true = LowLevelILLabel()
+        false = LowLevelILLabel()
+        exit = LowLevelILLabel()
+        self.i(self.il.if_expr(self.il.compare_not_equal(4, self.pri, self.const(0)), true, false))
+        self.il.mark_label(true)
+        self.i(self.set_reg('pri', self.const(0)))
+        self.il.goto(exit)
+        self.il.mark_label(false)
+        self.i(self.set_reg('pri', self.const(1)))
+        self.il.mark_label(exit)
     def visit_INVERT(self):
         self.i(self.set_reg('pri', self.il.not_expr(4, self.pri)))
+    def visit_SHL_C_PRI(self):
+        self.i(self.set_reg('pri', self.il.shift_left(4, self.pri, self.const(self.read_param(0)))))
+    def visit_SHL_C_ALT(self):
+        self.i(self.set_reg('alt', self.il.shift_left(4, self.alt, self.const(self.read_param(0)))))
+    def visit_SHL(self):
+        self.i(self.set_reg('pri', self.il.shift_left(4, self.pri, self.alt)))
+    def visit_SHR(self):
+        self.i(self.set_reg('pri', self.il.logical_shift_right(4, self.pri, self.alt)))
+    def visit_SSHR(self):
+        self.i(self.set_reg('pri', self.il.arith_shift_right(4, self.pri, self.alt)))
     
     def visit_EQ(self):
         self.i(self.set_reg('pri', self.il.compare_equal(4, self.pri, self.alt)))
@@ -371,6 +408,12 @@ class SmxLifter(SmxOpcodeVisitor):
             target = self.read_addr(2 + 2*i + 1)
             self.jump_cond(self.il.compare_equal(4, self.pri, self.const(value)), target)
     
+    def visit_LIDX(self):
+        addr = self.add(self.alt, self.mult(self.pri, self.const(4)))
+        self.i(self.set_reg('pri', self.load(addr)))
+    def visit_IDXADDR(self):
+        addr = self.add(self.alt, self.mult(self.pri, self.const(4)))
+        self.i(self.set_reg('pri', addr))
     def visit_LREF_S_PRI(self):
         address = self.frame_value(self.read_param(0))
         self.i(self.set_reg('pri', self.load(address)))
