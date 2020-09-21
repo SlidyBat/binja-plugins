@@ -164,7 +164,7 @@ class SmxLifter(SmxOpcodeVisitor):
         self.visit_PUSH_S_n(1)
     def visit_PUSH2_S(self):
         self.visit_PUSH_S_n(2)
-    def visit_PUSH3_S_(self):
+    def visit_PUSH3_S(self):
         self.visit_PUSH_S_n(3)
     def visit_PUSH4_S(self):
         self.visit_PUSH_S_n(4)
@@ -196,7 +196,7 @@ class SmxLifter(SmxOpcodeVisitor):
         self.i(self.set_reg('pri', self.load(self.frame_value(self.read_param(0)))))
         self.i(self.set_reg('alt', self.load(self.frame_value(self.read_param(1)))))
     def visit_LOAD_I(self):
-        self.i(self.set_reg('pri', self.load(pri)))
+        self.i(self.set_reg('pri', self.load(self.pri)))
     
     def visit_STOR_PRI(self):
         self.i(self.store(self.ptr(self.read_addr(0)), self.pri))
@@ -219,7 +219,7 @@ class SmxLifter(SmxOpcodeVisitor):
         nparams = self.read_param(1)
         self.i(self.push(self.const(index)))
         self.i(self.il.system_call())
-        #self.i(self.set_reg('sp', self.add(self.sp, self.mult(self.const(nparams + 1), self.const(4)))))
+        self.i(self.set_reg('sp', self.add(self.sp, self.mult(self.const(nparams + 1), self.const(4)))))
     
     def visit_ADDR_PRI(self):
         self.i(self.set_reg('pri', self.frame_value(self.read_param(0))))
@@ -332,7 +332,7 @@ class SmxLifter(SmxOpcodeVisitor):
         addr = self.frame_value(self.read_param(0))
         self.i(self.store(addr, self.add(self.load(addr), self.const(1))))
     def visit_INC_I(self):
-        addr = self.read_addr(0)
+        addr = self.ptr(self.read_addr(0))
         self.i(self.store(addr, self.add(self.load(addr), self.const(1))))
     def visit_DEC_PRI(self):
         self.i(self.set_reg('pri', self.sub(self.pri, self.const(1))))
@@ -344,7 +344,7 @@ class SmxLifter(SmxOpcodeVisitor):
         addr = self.frame_value(self.read_param(0))
         self.i(self.store(addr, self.sub(self.load(addr), self.const(1))))
     def visit_DEC_I(self):
-        addr = self.read_addr(0)
+        addr = self.ptr(self.read_addr(0))
         self.i(self.store(addr, self.sub(self.load(addr), self.const(1))))
     
     def visit_MOVS(self):
@@ -379,10 +379,10 @@ class SmxLifter(SmxOpcodeVisitor):
         self.i(self.set_reg('alt', self.load(address)))
     def visit_SREF_S_PRI(self):
         address = self.frame_value(self.read_param(0))
-        self.i(self.store(self.ptr(address), self.pri))
+        self.i(self.store(address, self.pri))
     def visit_SREF_S_ALT(self):
         address = self.frame_value(self.read_param(0))
-        self.i(self.store(self.ptr(address), self.alt))
+        self.i(self.store(address, self.alt))
     
     def visit_MOVE_PRI(self):
         self.i(self.set_reg('pri', self.alt))
@@ -404,6 +404,7 @@ class SmxLifter(SmxOpcodeVisitor):
     def visit_STACK(self):
         self.i(self.set_reg('sp', self.add(self.sp, self.const(self.read_param(0)))))
     def visit_HEAP(self):
+        self.i(self.set_reg('alt', self.heap))
         self.i(self.set_reg('heap', self.add(self.heap, self.const(self.read_param(0)))))
     
     def visit_TRACKER_PUSH_C(self):
@@ -416,15 +417,15 @@ class SmxLifter(SmxOpcodeVisitor):
         self.i(self.set_reg('heap', self.sub(self.heap, amount)))
     
     def visit_GENARRAY(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())
     def visit_GENARRAY_Z(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())
     def visit_IDXADDR(self):
         self.i(self.set_reg('pri', self.add(self.alt, self.mult(self.pri, self.const(4)))))
     def visit_BOUNDS(self):
         pass
     def visit_REBASE(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())
     
     def visit_STRADJUST_PRI(self):
         self.i(self.set_reg('pri', self.il.arith_shift_right(4, self.add(self.pri, self.const(4)), self.const(2))))
@@ -464,20 +465,20 @@ class SmxLifter(SmxOpcodeVisitor):
         self.i(self.set_reg('pri', self.pop()))
         self.i(self.set_reg('pri', self.il.ceil(4, self.pri)))
     def visit_RND_TO_ZERO(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())
     def visit_FLOATCMP(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())
     def visit_FLOAT_GT(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())
     def visit_FLOAT_GE(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())
     def visit_FLOAT_LE(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())
     def visit_FLOAT_LT(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())
     def visit_FLOAT_EQ(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())
     def visit_FLOAT_NE(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())
     def visit_FLOAT_NOT(self):
-        self.i(self.unimplemented())
+        self.i(self.il.unimplemented())

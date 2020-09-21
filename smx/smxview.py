@@ -13,7 +13,7 @@ class DefaultCallingConvention(CallingConvention):
 class NativeCallingConvention(CallingConvention):
     int_return_reg = 'pri'
     int_arg_regs = []
-    stack_adjusted_on_return = True
+    stack_adjusted_on_return = False
 
 class SmxView(BinaryView):
     name = 'SMX'
