@@ -42,7 +42,7 @@ class TypeBuilder:
         if b == TypeFlag.FixedArray:
             size = self.decode_uint32()
             inner = self.decode_type()
-            return Type.array(inner, size)
+            return Type.pointer(self.bv.arch, inner)
         if b == TypeFlag.Array:
             inner = self.decode_type()
             return Type.pointer(self.bv.arch, inner)
