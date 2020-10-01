@@ -111,25 +111,30 @@ def find_rtti(bv):
             vtable_name = demangle_vtable_name(bv, mangled_name.value)
             class_name = get_class_name(bv, mangled_name.value)
             bv.define_data_var(typedesc, type_descriptor_t(bv, mangled_name.length))
-            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, typedesc, '%s::`RTTI Type Descriptor\'' % class_name))
+            typedesc_name = '%s::`RTTI Type Descriptor\'' % class_name
+            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, typedesc, typedesc_name, raw_name='%s_%i' % (typedesc_name, vtable_count)))
             print('[%i] vtable at : 0x%0x (%s)' % (vtable_count, p_vtable, vtable_name))
             
             # Now that we have the class name, rename complete object locator to something more suitable
-            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, p_col, 'locator_%s' % class_name))
-            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, col, '%s::`RTTI Complete Object Locator\'' % class_name))
+            p_col_name = 'locator_%s' % class_name
+            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, p_col, p_col_name, raw_name='%s_%i' % (p_col_name, vtable_count)))
+            col_name = '%s::`RTTI Complete Object Locator\'' % class_name
+            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, col, col_name, raw_name='%s_%i' % (col_name, vtable_count)))
             
             # Define class hierarchy desc
             br.seek(col + 0x10)
             classhier = read_ptr(bv, br)
             bv.define_data_var(classhier, class_hierarchy_desc_t(bv))
-            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, classhier, '%s::`RTTI Class Hierarchy Descriptor\'' % class_name))
+            hierdesc_name = '%s::`RTTI Class Hierarchy Descriptor\'' % class_name
+            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, classhier, hierdesc_name, raw_name='%s_%i' % (hierdesc_name, vtable_count)))
             
             # Define base class array
             br.seek(classhier + 8)
             num_baseclasses = br.read32()
             baseclasses = read_ptr(bv, br)
             bv.define_data_var(baseclasses, Type.array(Type.pointer(bv.arch, base_class_desc_t(bv)), num_baseclasses))
-            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, baseclasses, '%s::`RTTI Base Class Array\'' % class_name))
+            baseclasses_name = '%s::`RTTI Base Class Array\'' % class_name
+            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, baseclasses, baseclasses_name, raw_name='%s_%i' % (baseclasses_name, vtable_count)))
             
             # Count number of functions in vtable and mark as array
             br.seek(p_vtable)
@@ -141,7 +146,7 @@ def find_rtti(bv):
                 vfunc_count += 1
                 bv.add_function(vtable_func)
             bv.define_data_var(p_vtable, vtable_t(bv, vfunc_count))
-            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, p_vtable, vtable_name))
+            bv.define_user_symbol(Symbol(SymbolType.DataSymbol, p_vtable, vtable_name, raw_name='%s_%i' % (vtable_name, vtable_count)))
         
         # The last vtable func check failed, back up in case this is a locator
         br.offset -= 4
