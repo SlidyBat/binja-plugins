@@ -10,7 +10,7 @@ def demangle_vtable_name(bv, name):
     try:
         if name[:4] in [ '.?AU', '.?AV' ]:
             # demangle_ms doesn't support flags (UNDNAME_32_BIT_DECODE | UNDNAME_NAME_ONLY | UNDNAME_NO_ARGUMENTS | UNDNAME_NO_MS_KEYWORDS)
-            demangle_type, demangle_name = demangle.demangle_ms(bv.arch, '??_6%s6B@' % name[4:])
+            demangle_type, demangle_name = demangle.demangle_ms(bv.arch, '??_7%s6B@' % name[4:])
 
             if demangle_type is not None:
                 return demangle.get_qualified_name(demangle_name)
@@ -23,7 +23,7 @@ def get_class_name(bv, name):
     try:
         if name[:4] in [ '.?AU', '.?AV' ]:
             # demangle_ms doesn't support flags (UNDNAME_32_BIT_DECODE | UNDNAME_NAME_ONLY | UNDNAME_NO_ARGUMENTS | UNDNAME_NO_MS_KEYWORDS)
-            demangle_type, demangle_name = demangle.demangle_ms(bv.arch, '??_6%s6B@' % name[4:])
+            demangle_type, demangle_name = demangle.demangle_ms(bv.arch, '??_7%s6B@' % name[4:])
 
             if demangle_type is not None:
                 return demangle_name[0]
