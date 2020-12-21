@@ -76,6 +76,7 @@ class SmxView(BinaryView):
         self.init_section('.data')
         self.init_section('.publics')
         self.init_section('.pubvars')
+        self.init_section('.natives')
         self.init_section('rtti.data')
         self.init_section('rtti.methods')
         self.init_section('rtti.natives')
@@ -131,6 +132,7 @@ class SmxView(BinaryView):
             '.data':                  self.init_data,
             '.publics':               self.init_publics,
             '.pubvars':               self.init_pubvars,
+            '.natives':               self.init_natives,
             '.names':                 self.init_names,
             'rtti.data':              self.init_rtti_data,
             'rtti.methods':           self.init_rtti_methods,
@@ -208,8 +210,18 @@ class SmxView(BinaryView):
     
     def init_natives(self, name, offs, size):
         self.add_auto_section(name, offs, size)
-        self.define_data_var(offs, Type.structure_type(sp_file_natives_t))
+        
+        row_count = size // sp_file_natives_t.width
+        self.define_data_var(offs, Type.array(Type.structure_type(sp_file_natives_t), row_count))
         self.define_auto_symbol(Symbol(SymbolType.DataSymbol, offs, 'sp_file_natives_t'))
+        
+        self.sp_natives = []
+        for i in range(row_count):
+            name = unpack('<I', self.data.read(offs + i*sp_file_natives_t.width, sp_file_natives_t.width))[0]
+            
+            names = self.get_section_by_name('.names')
+            native_name = self.read_cstr(names.start + name)
+            self.sp_natives += [native_name]
     
     def init_names(self, name, offs, size):
         self.add_auto_section(name, offs, size)
@@ -258,11 +270,14 @@ class SmxView(BinaryView):
         self.define_data_var(offs + smx_rtti_table_header.width, Type.array(Type.structure_type(smx_rtti_native), row_count))
         self.define_auto_symbol(Symbol(SymbolType.DataSymbol, offs + smx_rtti_table_header.width, 'smx_rtti_native'))
         
-        self.sp_natives = []
+        if not self.sp_natives:
+            self.sp_natives = []
         for i in range(row_count):
             name, signature = unpack('<II', self.data.read(offs + smx_rtti_table_header.width + i*smx_rtti_native.width, smx_rtti_native.width))
             names = self.get_section_by_name('.names')
-            self.sp_natives += [self.read_cstr(names.start + name)]
+            native_name = self.read_cstr(names.start + name)
+            if native_name not in self.sp_natives:
+                self.sp_natives += [native_name]
     
     def init_rtti_classdefs(self, name, offs, size):
         self.add_auto_section(name, offs, size)
