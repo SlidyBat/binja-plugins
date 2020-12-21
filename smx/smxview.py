@@ -71,8 +71,24 @@ class SmxView(BinaryView):
         
         self.init_header()
         
-        for i in range(len(self.sp_sections_name)):
-            self.init_section(i)
+        self.init_section('.names')
+        self.init_section('.code')
+        self.init_section('.data')
+        self.init_section('.publics')
+        self.init_section('.pubvars')
+        self.init_section('rtti.data')
+        self.init_section('rtti.methods')
+        self.init_section('rtti.natives')
+        self.init_section('rtti.classdefs')
+        self.init_section('rtti.fields')
+        self.init_section('rtti.enumstructs')
+        self.init_section('rtti.enumstruct_fields')
+        self.init_section('.dbg.files')
+        self.init_section('.dbg.lines')
+        self.init_section('.dbg.info')
+        self.init_section('.dbg.methods')
+        self.init_section('.dbg.globals')
+        self.init_section('.dbg.locals')
         
         self.add_analysis_completion_event(self.analyse_instrs)
         
@@ -85,9 +101,7 @@ class SmxView(BinaryView):
         self.define_auto_symbol(Symbol(SymbolType.DataSymbol, 0, 'sp_file_hdr_t'))
         
         # Handle section headers
-        self.sp_sections_name  = [''] * sections
-        self.sp_sections_data  = [0] * sections
-        self.sp_sections_size  = [0] * sections
+        self.sp_sections = {}
         
         sp_stringtable_t = Structure()
         sp_stringtable_t.packed = True
@@ -97,40 +111,42 @@ class SmxView(BinaryView):
             offs_end = offs_start + sp_file_section_t.width
             nameoffs, dataoffs, size = unpack('<III', self.data[offs_start:offs_end])
             
-            self.sp_sections_data[i] = dataoffs
-            self.sp_sections_size[i] = size
-            self.sp_sections_name[i] = self.read_cstr(stringtab + nameoffs)
+            name = self.read_cstr(stringtab + nameoffs)
+            self.sp_sections[name] = (dataoffs, size)
             
-            sp_stringtable_t.append(Type.array(Type.char(), len(self.sp_sections_name[i]) + 1), 'section_%i' % i)
+            sp_stringtable_t.append(Type.array(Type.char(), len(name) + 1), 'section_%i' % i)
             self.define_data_var(offs_start, Type.structure_type(sp_file_section_t))
-            self.define_auto_symbol(Symbol(SymbolType.DataSymbol, offs_start, 'sp_file_section_t %s' % self.sp_sections_name[i]))
+            self.define_auto_symbol(Symbol(SymbolType.DataSymbol, offs_start, 'sp_file_section_t %s' % name))
         
         self.define_data_var(stringtab, Type.structure_type(sp_stringtable_t))
         self.define_auto_symbol(Symbol(SymbolType.DataSymbol, stringtab, 'sp_stringtable_t'))
     
-    def init_section(self, index):
-        name = self.sp_sections_name[index]
-        dataoffs = self.sp_sections_data[index]
-        size = self.sp_sections_size[index]
+    def init_section(self, name):
+        if name not in self.sp_sections:
+            return
+        dataoffs, size = self.sp_sections[name]
     
-        if   name == '.code':                  self.init_code(name, dataoffs, size)
-        elif name == '.data':                  self.init_data(name, dataoffs, size)
-        elif name == '.publics':               self.init_publics(name, dataoffs, size)
-        elif name == '.pubvars':               self.init_pubvars(name, dataoffs, size)
-        elif name == '.names':                 self.init_names(name, dataoffs, size)
-        elif name == 'rtti.data':              self.init_rtti_data(name, dataoffs, size)
-        elif name == 'rtti.methods':           self.init_rtti_methods(name, dataoffs, size)
-        elif name == 'rtti.natives':           self.init_rtti_natives(name, dataoffs, size)
-        elif name == 'rtti.classdefs':         self.init_rtti_classdefs(name, dataoffs, size)
-        elif name == 'rtti.fields':            self.init_rtti_fields(name, dataoffs, size)
-        elif name == 'rtti.enumstructs':       self.init_rtti_enumstructs(name, dataoffs, size)
-        elif name == 'rtti.enumstruct_fields': self.init_rtti_enumstruct_fields(name, dataoffs, size)
-        elif name == '.dbg.files':             self.init_dbg_files(name, dataoffs, size)
-        elif name == '.dbg.lines':             self.init_dbg_lines(name, dataoffs, size)
-        elif name == '.dbg.info':              self.init_dbg_info(name, dataoffs, size)
-        elif name == '.dbg.methods':           self.init_dbg_methods(name, dataoffs, size)
-        elif name == '.dbg.globals':           self.init_dbg_globals(name, dataoffs, size)
-        elif name == '.dbg.locals':            self.init_dbg_locals(name, dataoffs, size)
+        init_func = {
+            '.code':                  self.init_code,
+            '.data':                  self.init_data,
+            '.publics':               self.init_publics,
+            '.pubvars':               self.init_pubvars,
+            '.names':                 self.init_names,
+            'rtti.data':              self.init_rtti_data,
+            'rtti.methods':           self.init_rtti_methods,
+            'rtti.natives':           self.init_rtti_natives,
+            'rtti.classdefs':         self.init_rtti_classdefs,
+            'rtti.fields':            self.init_rtti_fields,
+            'rtti.enumstructs':       self.init_rtti_enumstructs,
+            'rtti.enumstruct_fields': self.init_rtti_enumstruct_fields,
+            '.dbg.files':             self.init_dbg_files,
+            '.dbg.lines':             self.init_dbg_lines,
+            '.dbg.info':              self.init_dbg_info,
+            '.dbg.methods':           self.init_dbg_methods,
+            '.dbg.globals':           self.init_dbg_globals,
+            '.dbg.locals':            self.init_dbg_locals,
+        }
+        init_func[name](name, dataoffs, size)
     
     def init_code(self, name, offs, size):
         self.add_auto_section(name, offs, size)
