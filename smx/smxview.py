@@ -336,6 +336,18 @@ class SmxView(BinaryView):
         _, _, row_count = unpack('<III', self.data.read(offs, smx_rtti_table_header.width))
         self.define_data_var(offs + smx_rtti_table_header.width, Type.array(Type.structure_type(smx_rtti_debug_var), row_count))
         self.define_auto_symbol(Symbol(SymbolType.DataSymbol, offs + smx_rtti_table_header.width, 'smx_rtti_debug_var globals'))
+        
+        for i in range(row_count):
+            address, vclass, name, code_start, code_end, type_id = unpack('<iBIIII', self.data.read(offs + smx_rtti_table_header.width + i*smx_rtti_debug_var.width, smx_rtti_debug_var.width))
+            
+            names = self.get_section_by_name('.names')
+            var_name = self.read_cstr(names.start + name)
+            
+            typebuilder = TypeBuilder(self, type_id)
+            var_type = typebuilder.decode_type()
+            
+            self.define_data_var(offs, var_type)
+            self.define_auto_symbol(Symbol(SymbolType.DataSymbol, self.sp_data + address, var_name))
     
     def init_dbg_locals(self, name, offs, size):
         self.add_auto_section(name, offs, size)
