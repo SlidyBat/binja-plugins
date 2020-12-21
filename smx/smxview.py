@@ -197,6 +197,14 @@ class SmxView(BinaryView):
         row_count = size // sp_file_pubvars_t.width
         self.define_data_var(offs, Type.array(Type.structure_type(sp_file_pubvars_t), row_count))
         self.define_auto_symbol(Symbol(SymbolType.DataSymbol, offs, 'sp_file_pubvars_t'))
+        
+        for i in range(row_count):
+            address, name = unpack('<II', self.data.read(offs + i*sp_file_pubvars_t.width, sp_file_pubvars_t.width))
+            
+            names = self.get_section_by_name('.names')
+            var_name = self.read_cstr(names.start + name)
+            self.define_data_var(self.sp_data + address, Type.int(4))
+            self.define_auto_symbol(Symbol(SymbolType.DataSymbol, self.sp_data + address, var_name))
     
     def init_natives(self, name, offs, size):
         self.add_auto_section(name, offs, size)
