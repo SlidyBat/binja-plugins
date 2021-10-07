@@ -46,10 +46,7 @@ class SmxLifter(SmxOpcodeVisitor):
         return self.il.reg(4, 'sp')
     
     def label(self, addr):
-        l = self.il.get_label_for_address(self.data.arch, addr)
-        if l == None:
-            return LowLevelILLabel()
-        return l
+        return self.il.get_label_for_address(self.data.arch, addr)
     
     def i(self, instr):
         self.il.append(instr)
@@ -83,12 +80,29 @@ class SmxLifter(SmxOpcodeVisitor):
             fallthrough = self.addr + 8
         true = self.label(target)
         false = self.label(fallthrough)
-        self.i(self.il.if_expr(cond, true, false))
-        if true == None:
-            self.il.mark_label(true)
-            self.i(self.il.jump(self.const(target)))
-        if false == None:
+        if true != None and false != None:
+            self.i(self.il.if_expr(cond, true, false))
+            return
+        if true != None:
+            false = LowLevelILLabel()
+            self.i(self.il.if_expr(cond, true, false))
             self.il.mark_label(false)
+            self.i(self.il.jump(self.ptr(fallthrough)))
+            return
+        if false != None:
+            true = LowLevelILLabel()
+            self.i(self.il.if_expr(cond, true, false))
+            self.il.mark_label(true)
+            self.i(self.il.jump(self.ptr(target)))
+            return
+        
+        true = LowLevelILLabel()
+        false = LowLevelILLabel()
+        self.i(self.il.if_expr(cond, true, false))
+        self.il.mark_label(true)
+        self.i(self.il.jump(self.ptr(target)))
+        self.il.mark_label(false)
+        self.i(self.il.jump(self.ptr(fallthrough)))
     
     def visit_NONE(self):
         self.i(self.il.nop())

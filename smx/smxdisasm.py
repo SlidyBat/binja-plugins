@@ -71,7 +71,7 @@ def sp_instruction_info(instr_data, addr, code_addr, data_addr):
     elif op == SmxOp.JUMP:
         target = read_cell(instr_data, 1)
         info.add_branch(BranchType.UnconditionalBranch, code_addr + target)
-    elif op in [SmxOp.JZER, SmxOp.JNZ, SmxOp.JEQ, SmxOp.JSLESS, SmxOp.JSLEQ, SmxOp.JSGRTR, SmxOp.JSGEQ]:
+    elif op in [SmxOp.JZER, SmxOp.JNZ, SmxOp.JEQ, SmxOp.JNEQ, SmxOp.JSLESS, SmxOp.JSLEQ, SmxOp.JSGRTR, SmxOp.JSGEQ]:
         target = read_cell(instr_data, 1)
         info.add_branch(BranchType.TrueBranch, code_addr + target)
         info.add_branch(BranchType.FalseBranch, addr + 8)
