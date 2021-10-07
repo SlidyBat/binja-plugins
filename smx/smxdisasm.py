@@ -51,7 +51,7 @@ def sp_disasm(instr_data, addr, code_addr, data_addr):
     #print(debug)
     if op == SmxOp.CASETBL:
         ncases = read_cell(instr_data, 1)
-        info.length += ncases * 2
+        cells += ncases * 2
     
     return result, cells * 4
 
