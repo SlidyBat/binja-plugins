@@ -104,7 +104,7 @@ class SmxView(BinaryView):
         # Handle section headers
         self.sp_sections = {}
         
-        sp_stringtable_t = Structure()
+        sp_stringtable_t = StructureBuilder.create()
         sp_stringtable_t.packed = True
         
         for i in range(sections):
