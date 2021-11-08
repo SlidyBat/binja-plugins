@@ -484,6 +484,15 @@ class SmxLifter(SmxOpcodeVisitor):
     def visit_REBASE(self):
         self.i(self.il.unimplemented())
     
+    def visit_INITARRAY_PRI(self):
+        pass
+    def visit_INITARRAY_ALT(self):
+        pass
+    def visit_HEAP_SAVE(self):
+        pass
+    def visit_HEAP_RESTORE(self):
+        pass
+    
     def visit_STRADJUST_PRI(self):
         self.i(self.set_reg('pri', self.il.arith_shift_right(4, self.add(self.pri, self.const(4)), self.const(2))))
     

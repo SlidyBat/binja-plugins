@@ -193,27 +193,31 @@ class SmxOp(IntEnum):
     ENDPROC = 166
     UNGEN_LDGFN_PRI = 167
     REBASE = 168
-    UNGEN_FIRST_FAKE = 169
-    FABS = 170
-    FLOAT = 171
-    FLOATADD = 172
-    FLOATSUB = 173
-    FLOATMUL = 174
-    FLOATDIV = 175
-    RND_TO_NEAREST = 176
-    RND_TO_FLOOR = 177
-    RND_TO_CEIL = 178
-    RND_TO_ZERO = 179
-    FLOATCMP = 180
-    FLOAT_GT = 181
-    FLOAT_GE = 182
-    FLOAT_LT = 183
-    FLOAT_LE = 184
-    FLOAT_NE = 185
-    FLOAT_EQ = 186
-    FLOAT_NOT = 187
+    INITARRAY_PRI = 169
+    INITARRAY_ALT = 170
+    HEAP_SAVE = 171
+    HEAP_RESTORE = 172
+    UNGEN_FIRST_FAKE = 173
+    FABS = 174
+    FLOAT = 175
+    FLOATADD = 176
+    FLOATSUB = 177
+    FLOATMUL = 178
+    FLOATDIV = 179
+    RND_TO_NEAREST = 180
+    RND_TO_FLOOR = 181
+    RND_TO_CEIL = 182
+    RND_TO_ZERO = 183
+    FLOATCMP = 184
+    FLOAT_GT = 185
+    FLOAT_GE = 186
+    FLOAT_LT = 187
+    FLOAT_LE = 188
+    FLOAT_NE = 189
+    FLOAT_EQ = 190
+    FLOAT_NOT = 191
 
-SMX_NUM_OPS = 188
+SMX_NUM_OPS = 192
 
 # Pseudo-opcode
 SmxOp.CASE = 255
@@ -388,6 +392,10 @@ sp_opcode_info = {
     SmxOp.ENDPROC: ["endproc", 1],
     SmxOp.UNGEN_LDGFN_PRI: ["ldgfn.pri", 0],
     SmxOp.REBASE: ["rebase", 4],
+    SmxOp.INITARRAY_PRI: ["initarray.pri", 6],
+    SmxOp.INITARRAY_ALT: ["initarray.alt", 6],
+    SmxOp.HEAP_SAVE: ["heap.save", 1],
+    SmxOp.HEAP_RESTORE: ["heap.restore", 1],
     SmxOp.UNGEN_FIRST_FAKE: ["firstfake", 0],
     SmxOp.FABS: ["fabs", 1],
     SmxOp.FLOAT: ["float", 1],
@@ -553,6 +561,10 @@ sp_opcode_params_data = {
     SmxOp.ZERO_PRI: [],
     SmxOp.ZERO_S: [SmxParam.STACK],
     SmxOp.REBASE: [SmxParam.ADDRESS, SmxParam.CONSTANT, SmxParam.CONSTANT],
+    SmxOp.INITARRAY_PRI: [SmxParam.ADDRESS, SmxParam.CONSTANT, SmxParam.CONSTANT, SmxParam.CONSTANT, SmxParam.CONSTANT],
+    SmxOp.INITARRAY_ALT: [SmxParam.ADDRESS, SmxParam.CONSTANT, SmxParam.CONSTANT, SmxParam.CONSTANT, SmxParam.CONSTANT],
+    SmxOp.HEAP_SAVE: [],
+    SmxOp.HEAP_RESTORE: [],
     SmxOp.CASE: [SmxParam.CONSTANT, SmxParam.JUMP],
 }
 
