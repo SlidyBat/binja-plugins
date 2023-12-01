@@ -159,7 +159,8 @@ class ScanRtti(BackgroundTaskThread):
         self.bv = bv
 
     def run(self):
-        find_rtti(self.bv)
+        with self.bv.undoable_transaction():
+            find_rtti(self.bv)
 
 def command_scan_rtti(bv):
     task = ScanRtti('Scanning RTTI', bv)
