@@ -49,38 +49,38 @@ def vtable_t(bv, count):
     return Type.array(Type.pointer(bv.arch, Type.void()), count)
 
 def type_descriptor_t(bv, str_size):
-    type_descriptor_struct = Structure()
-    type_descriptor_struct.append(Type.pointer(bv.arch, Type.void()), 'vtable')
-    type_descriptor_struct.append(Type.pointer(bv.arch, Type.void()), 'runtime_ref')
-    type_descriptor_struct.append(Type.array(Type.int(1), str_size), 'name')
-    return Type.structure_type(type_descriptor_struct)
+    with StructureBuilder.builder(bv, 'type_descriptor_t') as type_descriptor_struct:
+        type_descriptor_struct.append(Type.pointer(bv.arch, Type.void()), 'vtable')
+        type_descriptor_struct.append(Type.pointer(bv.arch, Type.void()), 'runtime_ref')
+        type_descriptor_struct.append(Type.array(Type.int(1), str_size), 'name')
+        return Type.structure_type(type_descriptor_struct)
 
 def base_class_desc_t(bv):
-    base_class_desc_struct = Structure()
-    base_class_desc_struct.append(Type.pointer(bv.arch, Type.void()), 'pTypeDescriptor')
-    base_class_desc_struct.append(Type.int(4, False), 'numContainedBases')
-    base_class_desc_struct.append(Type.int(4), 'mdisp')
-    base_class_desc_struct.append(Type.int(4), 'pdisp')
-    base_class_desc_struct.append(Type.int(4), 'vdisp')
-    base_class_desc_struct.append(Type.int(4, False), 'attributes')
-    return Type.structure_type(base_class_desc_struct)
+    with StructureBuilder.builder(bv, 'base_class_desc_t') as base_class_desc_struct:
+        base_class_desc_struct.append(Type.pointer(bv.arch, Type.void()), 'pTypeDescriptor')
+        base_class_desc_struct.append(Type.int(4, False), 'numContainedBases')
+        base_class_desc_struct.append(Type.int(4), 'mdisp')
+        base_class_desc_struct.append(Type.int(4), 'pdisp')
+        base_class_desc_struct.append(Type.int(4), 'vdisp')
+        base_class_desc_struct.append(Type.int(4, False), 'attributes')
+        return Type.structure_type(base_class_desc_struct)
 
 def class_hierarchy_desc_t(bv):
-    class_hierarchy_desc_struct = Structure()
-    class_hierarchy_desc_struct.append(Type.int(4, False), 'signature')
-    class_hierarchy_desc_struct.append(Type.int(4, False), 'attributes')
-    class_hierarchy_desc_struct.append(Type.int(4, False), 'numBaseClasses')
-    class_hierarchy_desc_struct.append(Type.pointer(bv.arch, base_class_desc_t(bv)), 'pBaseClassArray')
-    return Type.structure_type(class_hierarchy_desc_struct)
+    with StructureBuilder.builder(bv, 'class_hierarchy_desc_t') as class_hierarchy_desc_struct:
+        class_hierarchy_desc_struct.append(Type.int(4, False), 'signature')
+        class_hierarchy_desc_struct.append(Type.int(4, False), 'attributes')
+        class_hierarchy_desc_struct.append(Type.int(4, False), 'numBaseClasses')
+        class_hierarchy_desc_struct.append(Type.pointer(bv.arch, base_class_desc_t(bv)), 'pBaseClassArray')
+        return Type.structure_type(class_hierarchy_desc_struct)
 
 def complete_object_locator_t(bv):
-    complete_object_locator_struct = Structure()
-    complete_object_locator_struct.append(Type.int(4, False), 'signature')
-    complete_object_locator_struct.append(Type.int(4, False), 'offset')
-    complete_object_locator_struct.append(Type.int(4, False), 'cdOffset')
-    complete_object_locator_struct.append(Type.pointer(bv.arch, Type.void()), 'pTypeDescriptor')
-    complete_object_locator_struct.append(Type.pointer(bv.arch, class_hierarchy_desc_t(bv)), 'pClassDescriptor')
-    return Type.structure_type(complete_object_locator_struct)
+    with StructureBuilder.builder(bv, 'complete_object_locator_t') as complete_object_locator_struct:
+        complete_object_locator_struct.append(Type.int(4, False), 'signature')
+        complete_object_locator_struct.append(Type.int(4, False), 'offset')
+        complete_object_locator_struct.append(Type.int(4, False), 'cdOffset')
+        complete_object_locator_struct.append(Type.pointer(bv.arch, Type.void()), 'pTypeDescriptor')
+        complete_object_locator_struct.append(Type.pointer(bv.arch, class_hierarchy_desc_t(bv)), 'pClassDescriptor')
+        return Type.structure_type(complete_object_locator_struct)
 
 def find_rtti(bv):
     rdata = bv.sections['.rdata']
